@@ -1,17 +1,31 @@
 pragma solidity ^0.4.24;
 
+interface IERC20 {
+    function totalSupply() external view returns (uint256);
+    function balanceOf(address account) external view returns (uint256);
+    function allowance(address owner, address spender) external view returns (uint256);
+    function transfer(address recipient, uint256 amount) external returns (bool);
+    function approve(address spender, uint256 amount) external returns (bool);
+    function transferFrom(address sender, address recipient, uint256 amount) external returns (bool);
+    event Transfer(address indexed from, address indexed to, uint256 value);
+    event Approval(address indexed owner, address indexed spender, uint256 value);
+}
 
-contract ERC20 {
+contract ERC20 is IERC20 {
 
-  event Transfer(address indexed, address indexed, uint256);
+  event Transfer(address indexed from, address indexed to, uint256 amount);
 
-  event Approval(address indexed, address indexed, uint256);
+  event Approval(address indexed owner, address indexed spender, uint256 amount);
 
   mapping (address => uint256) private _balances;
 
   mapping (address => mapping (address => uint256)) private _allowed;
 
   uint256 private _totalSupply;
+
+  constructor(uint256 initialSupply) public {
+    _totalSupply = initialSupply;
+  }
 
  
   function totalSupply() public view returns (uint256) {
@@ -71,68 +85,4 @@ contract ERC20 {
     emit Transfer(from, to, value);
     return true;
   }
-
-  /**
-   * @dev Increase the amount of tokens that an owner allowed to a spender.
-   * approve should be called when allowed_[_spender] == 0. To increment
-   * allowed value is better to use this function to avoid 2 calls (and wait until
-   * the first transaction is mined)
-   * From MonolithDAO Token.sol
-   * @param spender The address which will spend the funds.
-   * @param addedValue The amount of tokens to increase the allowance by.
-   */
-  function increaseAllowance(
-    address spender,
-    uint256 addedValue
-  )
-    public
-    returns (bool)
-  {
-    require(spender != address(0));
-
-    _allowed[msg.sender][spender] = (_allowed[msg.sender][spender] + addedValue);
-    emit Approval(msg.sender, spender, _allowed[msg.sender][spender]);
-    return true;
-  }
-
-  function decreaseAllowance(
-    address spender,
-    uint256 subtractedValue
-  )
-    public
-    returns (bool)
-  {
-    require(spender != address(0));
-
-    _allowed[msg.sender][spender] = (
-      _allowed[msg.sender][spender] + subtractedValue);
-    emit Approval(msg.sender, spender, _allowed[msg.sender][spender]);
-    return true;
-  }
-
-  function _mint(address account, uint256 amount) internal {
-    require(account != 0);
-    _totalSupply = _totalSupply + amount;
-    _balances[account] = _balances[account] + amount;
-    emit Transfer(address(0), account, amount);
-  }
-
- 
-  function _burn(address account, uint256 amount) internal {
-    require(account != 0);
-    require(amount <= _balances[account]);
-
-    _totalSupply = _totalSupply - amount;
-    _balances[account] = _balances[account] - amount;
-    emit Transfer(account, address(0), amount);
-  }
-
-  function safeMint(uint256 _amount) external {
-    _mint(msg.sender, _amount);
-  }
-
-  function burn(uint256 _amount) external {
-    _burn(msg.sender, _amount);
-  }
-
 }
